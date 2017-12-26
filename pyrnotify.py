@@ -43,6 +43,7 @@
 
 # ChangeLog:
 #
+# 2016-**-**: Changed escaping and made it more dunst (http://knopwob.org/dunst/index.html) friendly
 # 2014-05-10: Change hook_print callback argument type of displayed/highlight
 #             (WeeChat >= 1.0)
 # 2012-06-19: Added simple escaping to the title and body strings for
