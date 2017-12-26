@@ -43,6 +43,7 @@
 
 # ChangeLog:
 #
+# 2017-12-26: Made it python3 compatible (merry christmas)
 # 2016-**-**: Changed escaping and made it more dunst (http://knopwob.org/dunst/index.html) friendly
 # 2014-05-10: Change hook_print callback argument type of displayed/highlight
 #             (WeeChat >= 1.0)
@@ -86,7 +87,8 @@ def run_notify(urgency, nick,chan,message):
             host = w.config_get_plugin('host')
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((host, int(w.config_get_plugin('port'))))
-        s.send("%s %s \"%s to %s\" \"%s\"" % (urgency, socket.gethostname(), nick, chan, message))
+        reply = "%s %s \"%s to %s\" \"%s\"" % (urgency, socket.gethostname(), nick, chan, message) 
+        s.send(bytes(reply, "utf-8"))
         s.close()
     except Exception as e:
         w.prnt("", "Could not send notification: %s" % str(e))
@@ -110,7 +112,7 @@ def weechat_script():
                 'icon' : "utilities-terminal",
                 'pm-icon' : "emblem-favorite"}
     if w.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
-        for (kw, v) in settings.items():
+        for (kw, v) in list(settings.items()):
             if not w.config_get_plugin(kw):
                 w.config_set_plugin(kw, v)
         w.hook_print("", "notify_message", "", 1, "on_msg", "")
@@ -141,7 +143,7 @@ def accept_connections(s):
         data = ""
         d = conn.recv(1024)
         while d:
-            data += d
+            data += d.decode("utf-8")
             d = conn.recv(1024)
     finally:
         conn.close()
@@ -151,9 +153,9 @@ def accept_connections(s):
             subprocess.call(["notify-send", "-u", urgency, "-a", "IRC %s" % host, escape(title), escape(body)])
 
         except ValueError as e:
-            print e
+            print(e)
         except OSError as e:
-            print e
+            print(e)
     accept_connections(s)
 
 def weechat_client(argv):
@@ -172,15 +174,15 @@ def weechat_client(argv):
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s.bind(socket_address)
     else:
-        print SCRIPT_USAGEINFO
+        print(SCRIPT_USAGEINFO)
         sys.exit()
 
     s.listen(5)
     try:
         accept_connections(s)
     except KeyboardInterrupt as e:
-        print "Keyboard interrupt"
-        print e
+        print("Keyboard interrupt")
+        print(e)
     finally:
         s.close()
 
